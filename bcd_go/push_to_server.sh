@@ -1,0 +1,1 @@
+rsync -avz --exclude={.idea,.gradle,build,logs,*.log,temp} /Users/baichangda/bcd/goworkspace/bcd_go root@43.138.63.155:/app/project
