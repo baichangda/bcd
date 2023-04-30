@@ -46,7 +46,7 @@ var isInit = false
 func initEnv() {
 	if !isInit {
 		viper.AutomaticEnv()
-		getenv := viper.GetString("GO_VIDEO_DIR")
+		getenv := viper.GetString("VIDEO_DIR")
 		util.Log.Infof("get GO_VIDEO_DIR=%s", getenv)
 		if len(getenv) > 0 {
 			videoDir = getenv
