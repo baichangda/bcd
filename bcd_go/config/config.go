@@ -6,18 +6,6 @@ import (
 	"time"
 )
 
-//var MongoDB *mongo.Database
-//
-//func initMongo() {
-//	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-//	defer cancel()
-//	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://bcd:bcd@43.138.63.155/bcd"))
-//	if err != nil {
-//		util.Log.Errorf("%+v", err)
-//	}
-//	MongoDB = client.Database("bcd")
-//}
-
 const redisAddress = "43.138.63.155:6379"
 const redisPwd = "bcd"
 
