@@ -17,8 +17,8 @@ var isInit = false
 func initEnv() {
 	if !isInit {
 		viper.AutomaticEnv()
-		getenv := viper.GetString("GO_PHOTO_DIR")
-		util.Log.Infof("get GO_PHOTO_DIR=%s", getenv)
+		getenv := viper.GetString("PHOTO_DIR")
+		util.Log.Infof("get PHOTO_DIR=%s", getenv)
 		if len(getenv) > 0 {
 			dir = getenv
 		}
