@@ -147,12 +147,14 @@ func checkLogin(_ctx *gin.Context) {
 		} else {
 			_ = _ctx.Error(errors.WithStack(err))
 		}
+		_ctx.Abort()
 	} else {
 		user, ok := SessionMap.Load(token)
 		if ok {
 			_ctx.Set("user", user)
 		} else {
 			_ = _ctx.Error(message.NewMyError("请先登陆", 401))
+			_ctx.Abort()
 		}
 	}
 }
