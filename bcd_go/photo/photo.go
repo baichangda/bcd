@@ -4,6 +4,7 @@ import (
 	"bcd_go/message"
 	"bcd_go/util"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"os"
 	"sort"
@@ -37,12 +38,12 @@ func Route(engine *gin.Engine) {
 func del(_ctx *gin.Context) {
 	name := _ctx.Query("name")
 	if len(name) == 0 {
-		message.ResponseFailed_msg(1, "删除失败、必须有name参数", _ctx)
+		_ = _ctx.Error(message.NewMyError("删除失败、必须有name参数", 1))
 		return
 	}
 	err := os.Remove(dir + "/" + name)
 	if err != nil {
-		message.ResponseFailed_err(err, _ctx)
+		_ = _ctx.Error(errors.WithStack(err))
 		return
 	}
 	message.ResponseSucceed_msg("删除成功", _ctx)
@@ -51,12 +52,12 @@ func del(_ctx *gin.Context) {
 func upload(_ctx *gin.Context) {
 	file, err := _ctx.FormFile("file")
 	if err != nil {
-		message.ResponseFailed_err(err, _ctx)
+		_ = _ctx.Error(errors.WithStack(err))
 		return
 	}
 	err = _ctx.SaveUploadedFile(file, dir+"/"+time.Now().Format("20060102150405.000"))
 	if err != nil {
-		message.ResponseFailed_err(err, _ctx)
+		_ = _ctx.Error(errors.WithStack(err))
 		return
 	}
 	message.ResponseSucceed_msg("上传成功", _ctx)
@@ -65,7 +66,7 @@ func upload(_ctx *gin.Context) {
 func list(_ctx *gin.Context) {
 	readDir, err := os.ReadDir(dir)
 	if err != nil {
-		message.ResponseFailed_err(err, _ctx)
+		_ = _ctx.Error(errors.WithStack(err))
 		return
 	}
 	var photos []string

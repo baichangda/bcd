@@ -99,7 +99,7 @@ func find(username string) ([]User, error) {
 func list(_ctx *gin.Context) {
 	users, err := find("")
 	if err != nil {
-		message.ResponseFailed_err(err, _ctx)
+		_ = _ctx.Error(errors.WithStack(err))
 	} else {
 		message.ResponseSucceed_data(users, _ctx)
 	}
@@ -110,11 +110,11 @@ func login(_ctx *gin.Context) {
 	password := _ctx.PostForm("password")
 	users, err := find(username)
 	if err != nil {
-		message.ResponseFailed_err(err, _ctx)
+		_ = _ctx.Error(errors.WithStack(err))
 		return
 	}
 	if len(users) == 0 {
-		message.ResponseFailed_msg(101, "用户不存在", _ctx)
+		_ = _ctx.Error(message.NewMyError("用户不存在", 101))
 	} else {
 		user := users[0]
 		if user.Password == password {
@@ -123,7 +123,7 @@ func login(_ctx *gin.Context) {
 			_ctx.SetCookie(CookieTokenName, token, 86400, "/", "", false, true)
 			message.ResponseSucceed_data(user, _ctx)
 		} else {
-			message.ResponseFailed_msg(102, "密码错误", _ctx)
+			_ = _ctx.Error(message.NewMyError("密码错误", 102))
 		}
 	}
 }
@@ -131,7 +131,7 @@ func login(_ctx *gin.Context) {
 func logout(_ctx *gin.Context) {
 	token, err := _ctx.Cookie(CookieTokenName)
 	if err != nil {
-		message.ResponseFailed_err(err, _ctx)
+		_ = _ctx.Error(errors.WithStack(err))
 		return
 	}
 	SessionMap.Delete(token)
@@ -143,19 +143,16 @@ func checkLogin(_ctx *gin.Context) {
 	token, err := _ctx.Cookie(CookieTokenName)
 	if err != nil {
 		if err == http.ErrNoCookie {
-			message.ResponseFailed_msg(401, "请先登陆", _ctx)
-			_ctx.Abort()
+			_ = _ctx.Error(message.NewMyError("请先登陆", 401))
 		} else {
-			message.ResponseFailed_err(err, _ctx)
-			_ctx.Abort()
+			_ = _ctx.Error(errors.WithStack(err))
 		}
 	} else {
 		user, ok := SessionMap.Load(token)
 		if ok {
 			_ctx.Set("user", user)
 		} else {
-			message.ResponseFailed_msg(401, "请先登陆", _ctx)
-			_ctx.Abort()
+			_ = _ctx.Error(message.NewMyError("请先登陆", 401))
 		}
 	}
 }

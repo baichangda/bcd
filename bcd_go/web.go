@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bcd_go/message"
 	"bcd_go/photo"
 	"bcd_go/tools/ocr"
 	"bcd_go/user"
+	"bcd_go/util"
 	"bcd_go/video"
 	"bcd_go/wechat"
 	"github.com/gin-contrib/cors"
@@ -18,14 +20,30 @@ func startHttpServer() {
 	g.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 	}))
+	g.Use(gzip.Gzip(gzip.DefaultCompression))
 	g.Use(func(_ctx *gin.Context) {
+		//response content-type类型处理
 		fullPath := _ctx.FullPath()
 		if !strings.HasPrefix(fullPath, "/api/photo/download") && !strings.HasPrefix(fullPath, "/api/video") {
 			_ctx.Header("content-type", "application/json")
-			_ctx.Next()
 		}
+
+		//错误捕获
+		defer func() {
+			errs := _ctx.Errors
+			if len(errs) > 0 {
+				err, ok := (errs[0].Err).(*message.MyErr)
+				util.Log.Errorf("%+v", err)
+				if ok {
+					err.ToJsonMessage().Response(_ctx)
+				} else {
+					message.ResponseFailed_err(err, _ctx)
+				}
+			}
+		}()
+
+		_ctx.Next()
 	})
-	g.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	user.Route(g)
 	wechat.Route(g)
