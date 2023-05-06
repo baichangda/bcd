@@ -4,6 +4,7 @@ import (
 	"bcd_go/util"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
 type JsonMessage struct {
@@ -12,17 +13,12 @@ type JsonMessage struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func (msg *JsonMessage) ToBytes() []byte {
+func (msg *JsonMessage) Response(ctx *gin.Context) {
 	marshal, err := json.Marshal(msg)
 	if err != nil {
 		util.Log.Errorf("%+v", err)
 	}
-	return marshal
-}
-
-func (msg *JsonMessage) Response(ctx *gin.Context) {
-	marshal := msg.ToBytes()
-	_, err := ctx.Writer.Write(marshal)
+	_, err = ctx.Writer.Write(marshal)
 	if err != nil {
 		util.Log.Errorf("%+v", err)
 	}
@@ -42,13 +38,6 @@ func Succeed_data(data interface{}) *JsonMessage {
 	}
 }
 
-func Failed(code int, message string) *JsonMessage {
-	return &JsonMessage{
-		Code:    code,
-		Message: message,
-	}
-}
-
 func ResponseSucceed_msg(msg string, ctx *gin.Context) {
 	Succeed_msg(msg).Response(ctx)
 }
@@ -57,33 +46,42 @@ func ResponseSucceed_data(data interface{}, ctx *gin.Context) {
 	Succeed_data(data).Response(ctx)
 }
 
-func ResponseFailed_msg(code int, msg string, ctx *gin.Context) {
-	Failed(code, msg).Response(ctx)
+func FromGinError(err *gin.Error) *JsonMessage {
+	meta, ok := err.Meta.(*ErrorMeta)
+	if ok {
+		return &JsonMessage{
+			Code:    meta.Code,
+			Message: err.Error(),
+			Data:    meta.Data,
+		}
+	} else {
+		return &JsonMessage{
+			Code:    1,
+			Message: err.Error(),
+		}
+	}
 }
 
-func ResponseFailed_err(err error, ctx *gin.Context) {
-	Failed(1, err.Error()).Response(ctx)
+func GinError_msg_code(ctx *gin.Context, msg string, code int) {
+	_ = ctx.Error(&gin.Error{
+		Err:  errors.New(msg),
+		Type: gin.ErrorTypeAny,
+		Meta: ErrorMeta{
+			Code: code,
+			Data: nil,
+		},
+	})
 }
 
-type MyErr struct {
-	Msg  string
+func GinError_msg(ctx *gin.Context, msg string) {
+	GinError_msg_code(ctx, msg, 1)
+}
+
+func GinError_err(ctx *gin.Context, err error) {
+	_ = ctx.Error(errors.WithStack(err))
+}
+
+type ErrorMeta struct {
 	Code int
-}
-
-func (m *MyErr) Error() string {
-	return m.Msg
-}
-
-func (m *MyErr) ToJsonMessage() *JsonMessage {
-	return &JsonMessage{
-		Code:    m.Code,
-		Message: m.Msg,
-	}
-}
-
-func NewMyError(msg string, code int) *MyErr {
-	return &MyErr{
-		Msg:  msg,
-		Code: code,
-	}
+	Data any
 }

@@ -152,7 +152,7 @@ func list(_ctx *gin.Context) {
 		if err == redis.Nil {
 			message.ResponseSucceed_data([]Video{}, _ctx)
 		} else {
-			message.ResponseFailed_err(err, _ctx)
+			message.GinError_err(_ctx, err)
 		}
 	} else {
 		if len(result) == 0 {
@@ -163,7 +163,7 @@ func list(_ctx *gin.Context) {
 				cur := Video{}
 				err := json.Unmarshal([]byte(v), &cur)
 				if err != nil {
-					message.ResponseFailed_err(err, _ctx)
+					message.GinError_err(_ctx, err)
 					return
 				} else {
 					list = append(list, cur)

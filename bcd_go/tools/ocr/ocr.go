@@ -46,7 +46,7 @@ func process_image_baiduAI(ctx *gin.Context) {
 		}
 		message.ResponseSucceed_data(sb.String(), ctx)
 	} else {
-		_ = ctx.Error(message.NewMyError(fmt.Sprintf("失败、错误信息:\n%s", json.Raw), 1))
+		message.GinError_msg(ctx, fmt.Sprintf("失败、错误信息:\n%s", json.Raw))
 	}
 }
 
@@ -80,7 +80,7 @@ func process_image_baiduFanyi(ctx *gin.Context) {
 		message.ResponseSucceed_data(sb.String(), ctx)
 	} else {
 		util.Log.Warn(json.Raw)
-		_ = ctx.Error(message.NewMyError(strconv.Quote(json.Get("errmsg").Str), 1))
+		message.GinError_msg(ctx, strconv.Quote(json.Get("errmsg").Str))
 	}
 }
 
@@ -103,7 +103,7 @@ func process_table_baiduAI(ctx *gin.Context) {
 	//cfg.Log.Debugf("json:\n%s", json.Raw)
 	error_code := json.Get("error_code")
 	if error_code.Exists() {
-		_ = ctx.Error(message.NewMyError(error_code.Raw, 1))
+		message.GinError_msg(ctx, error_code.Raw)
 	} else {
 		request_id := json.Get("result").Array()[0].Get("request_id").Str
 		end := time.Now().UnixMilli() + timeout.Milliseconds()
@@ -116,7 +116,7 @@ func process_table_baiduAI(ctx *gin.Context) {
 			resultError_code := resultJson.Get("error_code")
 			//cfg.Log.Debugf("resultJson:\n%s", resultJson.Raw)
 			if resultError_code.Exists() {
-				_ = ctx.Error(message.NewMyError(resultError_code.Raw, 1))
+				message.GinError_msg(ctx, resultError_code.Raw)
 				return
 			} else {
 				retCode := resultJson.Get("result").Get("ret_code").Int()
@@ -125,12 +125,12 @@ func process_table_baiduAI(ctx *gin.Context) {
 					if result_data.Exists() {
 						message.ResponseSucceed_data(result_data.Str, ctx)
 					} else {
-						_ = ctx.Error(message.NewMyError(fmt.Sprintf("执行失败\n%s", resultJson.Raw), 1))
+						message.GinError_msg(ctx, fmt.Sprintf("执行失败\n%s", resultJson.Raw))
 					}
 					break
 				} else {
 					if time.Now().UnixMilli() >= end {
-						_ = ctx.Error(message.NewMyError("获取结果超时", 1))
+						message.GinError_msg(ctx, "获取结果超时")
 						break
 					} else {
 						time.Sleep(2 * time.Second)

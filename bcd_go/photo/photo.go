@@ -38,7 +38,7 @@ func Route(engine *gin.Engine) {
 func del(_ctx *gin.Context) {
 	name := _ctx.Query("name")
 	if len(name) == 0 {
-		_ = _ctx.Error(message.NewMyError("删除失败、必须有name参数", 1))
+		message.GinError_msg(_ctx, "删除失败、必须有name参数")
 		return
 	}
 	err := os.Remove(dir + "/" + name)

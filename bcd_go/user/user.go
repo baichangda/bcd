@@ -114,7 +114,7 @@ func login(_ctx *gin.Context) {
 		return
 	}
 	if len(users) == 0 {
-		_ = _ctx.Error(message.NewMyError("用户不存在", 101))
+		message.GinError_msg_code(_ctx, "用户不存在", 101)
 	} else {
 		user := users[0]
 		if user.Password == password {
@@ -123,7 +123,7 @@ func login(_ctx *gin.Context) {
 			_ctx.SetCookie(CookieTokenName, token, 86400, "/", "", false, true)
 			message.ResponseSucceed_data(user, _ctx)
 		} else {
-			_ = _ctx.Error(message.NewMyError("密码错误", 102))
+			message.GinError_msg_code(_ctx, "密码错误", 102)
 		}
 	}
 }
@@ -143,9 +143,9 @@ func checkLogin(_ctx *gin.Context) {
 	token, err := _ctx.Cookie(CookieTokenName)
 	if err != nil {
 		if err == http.ErrNoCookie {
-			_ = _ctx.Error(message.NewMyError("请先登陆", 401))
+			message.GinError_msg_code(_ctx, "请先登陆", 401)
 		} else {
-			_ = _ctx.Error(errors.WithStack(err))
+			message.GinError_err(_ctx, err)
 		}
 		_ctx.Abort()
 	} else {
@@ -153,7 +153,7 @@ func checkLogin(_ctx *gin.Context) {
 		if ok {
 			_ctx.Set("user", user)
 		} else {
-			_ = _ctx.Error(message.NewMyError("请先登陆", 401))
+			message.GinError_msg_code(_ctx, "请先登陆", 401)
 			_ctx.Abort()
 		}
 	}
