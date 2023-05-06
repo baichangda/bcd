@@ -139,33 +139,34 @@ func logout(_ctx *gin.Context) {
 	message.ResponseSucceed_msg("注销成功", _ctx)
 }
 
-func checkLogin(_ctx *gin.Context) {
-	token, err := _ctx.Cookie(CookieTokenName)
-	if err != nil {
-		if err == http.ErrNoCookie {
-			message.GinError_msg_code(_ctx, "请先登陆", 401)
+func CheckLogin(_ctx *gin.Context) bool {
+	path := _ctx.FullPath()
+	if strings.HasPrefix(path, "/api") && !strings.HasPrefix(path, "/api/user/login") {
+		token, err := _ctx.Cookie(CookieTokenName)
+		if err != nil {
+			if err == http.ErrNoCookie {
+				message.GinError_msg_code(_ctx, "请先登陆", 401)
+			} else {
+				message.GinError_err(_ctx, err)
+			}
+			return false
 		} else {
-			message.GinError_err(_ctx, err)
-		}
-		_ctx.Abort()
-	} else {
-		user, ok := SessionMap.Load(token)
-		if ok {
-			_ctx.Set("user", user)
-		} else {
-			message.GinError_msg_code(_ctx, "请先登陆", 401)
-			_ctx.Abort()
+			user, ok := SessionMap.Load(token)
+			if ok {
+				_ctx.Set("user", user)
+				return true
+			} else {
+				message.GinError_msg_code(_ctx, "请先登陆", 401)
+				return false
+			}
 		}
 	}
+
+	return true
+
 }
 
 func Route(engine *gin.Engine) {
-	engine.Use(func(_ctx *gin.Context) {
-		path := _ctx.FullPath()
-		if strings.HasPrefix(path, "/api") && !strings.HasPrefix(path, "/api/user/login") {
-			checkLogin(_ctx)
-		}
-	})
 	engine.GET("/api/user/list", list)
 	engine.POST("/api/user/login", login)
 	engine.POST("/api/user/logout", logout)
