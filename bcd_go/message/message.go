@@ -24,30 +24,24 @@ func (msg *JsonMessage) Response(ctx *gin.Context) {
 	}
 }
 
-func Succeed_msg(msg string) *JsonMessage {
-	return &JsonMessage{
+func ResponseSucceed_msg(msg string, ctx *gin.Context) {
+	message := JsonMessage{
 		Code:    0,
 		Message: msg,
 	}
-}
-
-func Succeed_data(data interface{}) *JsonMessage {
-	return &JsonMessage{
-		Code: 0,
-		Data: data,
-	}
-}
-
-func ResponseSucceed_msg(msg string, ctx *gin.Context) {
-	Succeed_msg(msg).Response(ctx)
+	message.Response(ctx)
 }
 
 func ResponseSucceed_data(data interface{}, ctx *gin.Context) {
-	Succeed_data(data).Response(ctx)
+	message := JsonMessage{
+		Code: 0,
+		Data: data,
+	}
+	message.Response(ctx)
 }
 
 func FromGinError(err *gin.Error) *JsonMessage {
-	meta, ok := err.Meta.(*ErrorMeta)
+	meta, ok := err.Meta.(*errorMeta)
 	if ok {
 		return &JsonMessage{
 			Code:    meta.Code,
@@ -66,7 +60,7 @@ func GinError_msg_code(ctx *gin.Context, msg string, code int) {
 	_ = ctx.Error(&gin.Error{
 		Err:  errors.New(msg),
 		Type: gin.ErrorTypeAny,
-		Meta: ErrorMeta{
+		Meta: errorMeta{
 			Code: code,
 			Data: nil,
 		},
@@ -81,7 +75,7 @@ func GinError_err(ctx *gin.Context, err error) {
 	_ = ctx.Error(errors.WithStack(err))
 }
 
-type ErrorMeta struct {
+type errorMeta struct {
 	Code int
 	Data any
 }
