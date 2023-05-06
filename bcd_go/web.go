@@ -5,6 +5,7 @@ import (
 	"bcd_go/photo"
 	"bcd_go/tools/ocr"
 	"bcd_go/user"
+	"bcd_go/util"
 	"bcd_go/video"
 	"bcd_go/wechat"
 	"github.com/gin-contrib/cors"
@@ -31,6 +32,7 @@ func startHttpServer() {
 		defer func() {
 			errs := _ctx.Errors
 			if len(errs) > 0 {
+				util.Log.Errorf("%+v", errs[0].Err)
 				message.FromGinError(errs[0]).Response(_ctx)
 			}
 		}()
