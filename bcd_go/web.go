@@ -15,7 +15,6 @@ import (
 
 func startHttpServer() {
 	g := gin.Default()
-	cors.Default()
 	g.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 	}))
