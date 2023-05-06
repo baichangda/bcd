@@ -145,9 +145,9 @@ func CheckLogin(_ctx *gin.Context) bool {
 		token, err := _ctx.Cookie(CookieTokenName)
 		if err != nil {
 			if err == http.ErrNoCookie {
-				message.GinError_msg_code(_ctx, "请先登陆", 401)
+				message.ResponseFailed(_ctx, "请先登陆", 401)
 			} else {
-				message.GinError_err(_ctx, err)
+				message.ResponseFailed_err(_ctx, err)
 			}
 			return false
 		} else {
@@ -156,7 +156,7 @@ func CheckLogin(_ctx *gin.Context) bool {
 				_ctx.Set("user", user)
 				return true
 			} else {
-				message.GinError_msg_code(_ctx, "请先登陆", 401)
+				message.ResponseFailed(_ctx, "请先登陆", 401)
 				return false
 			}
 		}

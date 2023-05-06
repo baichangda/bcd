@@ -40,6 +40,22 @@ func ResponseSucceed_data(data interface{}, ctx *gin.Context) {
 	message.Response(ctx)
 }
 
+func ResponseFailed(ctx *gin.Context, msg string, code int) {
+	message := JsonMessage{
+		Code:    code,
+		Message: msg,
+	}
+	message.Response(ctx)
+}
+
+func ResponseFailed_err(ctx *gin.Context, err error) {
+	message := JsonMessage{
+		Code:    1,
+		Message: err.Error(),
+	}
+	message.Response(ctx)
+}
+
 func FromGinError(err *gin.Error) *JsonMessage {
 	meta, ok := err.Meta.(*errorMeta)
 	if ok {
