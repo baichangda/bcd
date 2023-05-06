@@ -22,16 +22,16 @@ func startHttpServer() {
 	}))
 	g.Use(gzip.Gzip(gzip.DefaultCompression))
 	g.Use(func(_ctx *gin.Context) {
-		//登陆验证
-		if !user.CheckLogin(_ctx) {
-			_ctx.Abort()
-			return
-		}
-
 		//response content-type类型处理
 		fullPath := _ctx.FullPath()
 		if !strings.HasPrefix(fullPath, "/api/photo/download") && !strings.HasPrefix(fullPath, "/api/video") {
 			_ctx.Header("content-type", "application/json")
+		}
+
+		//登陆验证
+		if !user.CheckLogin(_ctx) {
+			_ctx.Abort()
+			return
 		}
 
 		//错误捕获
